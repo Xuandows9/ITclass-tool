@@ -615,6 +615,8 @@ reviewing courts shall apply local law that most closely approximates
 an absolute waiver of all civil liability in connection with the
 Program, unless a warranty or assumption of liability accompanies a
 copy of the Program in return for a fee.
+  18.不要抄袭。
+  这个项目才是原创，创作者**不允许**yjl214/lanchat使用本项目的代码
 
                      END OF TERMS AND CONDITIONS
 
@@ -629,8 +631,7 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-    <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
+    Copyright (C) 2026  Xuandows9
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
