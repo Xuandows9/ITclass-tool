@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ITclass-tool 图标</title>
+  <desc id="desc">绿色对话气泡、终端提示符和局域网节点组成的图标</desc>
+
+  <rect width="512" height="512" rx="112" fill="#17231D"/>
+  <rect x="48" y="48" width="416" height="416" rx="82" fill="#F4F7F2" stroke="#17231D" stroke-width="16"/>
+
+  <!-- network nodes -->
+  <path d="M256 166V104M256 166l-80-46M256 166l80-46" fill="none" stroke="#17231D" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cx="256" r="18" fill="#B9E769" stroke="#17231D" stroke-width="12"/>
+  <circle cx="158" cy="112" r="18" fill="#78AEB5" stroke="#17231D" stroke-width="12"/>
+  <circle cx="354" cy="112" r="18" fill="#F2CF64" stroke="#17231D" stroke-width="12"/>
+
+  <!-- chat window -->
+  <rect x="92" y="184" width="328" height="224" rx="36" fill="#FFFFFF" stroke="#17231D" stroke-width="16"/>
+  <path d="M148 408v52l68-52" fill="#FFFFFF" stroke="#17231D" stroke-width="16" stroke-linejoin="round"/>
+
+  <!-- terminal prompt -->
+  <path d="M154 246l38 38-38 38" fill="none" stroke="#1B6E47" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M222 322h106" fill="none" stroke="#1B6E47" stroke-width="24" stroke-linecap="round"/>
+
+  <!-- status dot -->
+  <circle cx="378" cy="218" r="18" fill="#B9E769" stroke="#17231D" stroke-width="10"/>
+</svg>
