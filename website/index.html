@@ -1,1 +1,311 @@
-棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母棍母
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f7f2">
+  <title>ITclass-tool · 信息课小工具</title>
+  <meta name="description" content="局域网聊天、一键启动游戏与课堂工具整合站。纯 P2P，不依赖外网。">
+  <style>
+    :root {
+      --ink: #17231d;
+      --muted: #66736b;
+      --paper: #f4f7f2;
+      --card: rgba(255, 255, 255, .82);
+      --line: rgba(23, 35, 29, .10);
+      --green: #1b6e47;
+      --lime: #b9e769;
+      --yellow: #f2cf64;
+      --orange: #ef9766;
+      --blue: #78aeb5;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 82% 12%, rgba(185,231,105,.38), transparent 22rem),
+        radial-gradient(circle at 8% 78%, rgba(120,174,181,.20), transparent 24rem),
+        var(--paper);
+      font-family: "Microsoft YaHei UI", "PingFang SC", system-ui, sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    nav {
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 38px; height: 38px; border: 1.5px solid var(--ink); border-radius: 12px;
+      display: grid; place-items: center; background: var(--lime);
+      box-shadow: 3px 3px 0 var(--ink);
+      font-size: 20px;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 28px; font-size: 14px; font-weight: 700; }
+    .nav-links a { transition: opacity .2s; }
+    .nav-links a:hover { opacity: .55; }
+
+    .github-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 10px 14px; background: rgba(255,255,255,.65);
+    }
+
+    .hero {
+      min-height: 580px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      align-items: center;
+      gap: 50px;
+      padding: 48px 0 70px;
+    }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      text-transform: uppercase; letter-spacing: .12em;
+      font-size: 12px; font-weight: 900; color: var(--green);
+    }
+    .eyebrow::before { content: ""; width: 34px; height: 2px; background: var(--green); }
+
+    h1 {
+      max-width: 680px;
+      margin: 20px 0 22px;
+      font-size: clamp(56px, 7vw, 92px);
+      line-height: .94;
+      letter-spacing: -.065em;
+    }
+    h1 em { color: var(--green); font-style: normal; }
+
+    .lead { max-width: 580px; color: var(--muted); font-size: 18px; line-height: 1.85; }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+    .btn {
+      min-height: 52px; border: 1.5px solid var(--ink); border-radius: 14px;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 9px; padding: 0 20px; font-weight: 900; transition: transform .18s, box-shadow .18s;
+    }
+    .btn-primary { background: var(--lime); box-shadow: 4px 4px 0 var(--ink); }
+    .btn-secondary { background: rgba(255,255,255,.72); }
+    .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+
+    .app-window {
+      position: relative;
+      min-height: 430px;
+      border: 1.5px solid var(--ink);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 14px 14px 0 rgba(23,35,29,.10);
+      overflow: hidden;
+    }
+    .window-bar { height: 54px; display: flex; align-items: center; gap: 7px; padding: 0 18px; border-bottom: 1.5px solid var(--line); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink); opacity: .18; }
+    .dot:first-child { opacity: 1; background: var(--orange); }
+
+    .window-body { display: grid; grid-template-columns: 118px 1fr; height: 376px; }
+    .sidebar { border-right: 1.5px solid var(--line); padding: 18px 12px; }
+    .avatar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--lime); border: 1.5px solid var(--ink); }
+    .avatar-row:nth-child(2) .avatar { background: var(--yellow); }
+    .avatar-row:nth-child(3) .avatar { background: var(--blue); }
+    .tiny-lines { flex: 1; }
+    .tiny-lines i { display: block; height: 5px; border-radius: 5px; background: var(--ink); opacity: .12; margin: 5px 0; }
+    .tiny-lines i:last-child { width: 65%; }
+
+    .chat { padding: 22px; display: flex; flex-direction: column; }
+    .chat-head { display: flex; justify-content: space-between; align-items: center; font-weight: 900; }
+    .status { color: var(--green); font-size: 12px; }
+    .messages { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+    .bubble { max-width: 78%; padding: 12px 15px; border: 1.5px solid var(--ink); border-radius: 14px; font-size: 13px; }
+    .bubble.incoming { align-self: flex-start; background: white; border-bottom-left-radius: 3px; }
+    .bubble.outgoing { align-self: flex-end; background: var(--lime); border-bottom-right-radius: 3px; }
+    .chat-input { height: 44px; border: 1.5px solid var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; color: var(--muted); font-size: 12px; }
+    .send { width: 29px; height: 29px; border-radius: 8px; background: var(--ink); color: white; display: grid; place-items: center; }
+
+    .float-tag {
+      position: absolute; right: -18px; bottom: 38px; transform: rotate(-3deg);
+      border: 1.5px solid var(--ink); border-radius: 12px; background: var(--yellow);
+      padding: 11px 14px; font-size: 12px; font-weight: 900;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .features { padding: 85px 0 100px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 30px; margin-bottom: 30px; }
+    .section-heading h2 { margin: 8px 0 0; font-size: clamp(38px, 5vw, 62px); letter-spacing: -.055em; }
+    .section-heading p { max-width: 420px; color: var(--muted); line-height: 1.7; }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .feature-card {
+      min-height: 310px;
+      border: 1.5px solid var(--ink); border-radius: 20px;
+      padding: 26px; display: flex; flex-direction: column;
+      background: var(--card); transition: transform .25s, box-shadow .25s;
+    }
+    .feature-card:hover { transform: translateY(-7px) rotate(-.5deg); box-shadow: 8px 8px 0 var(--ink); }
+    .feature-card:nth-child(2) { background: #edf5dc; }
+    .feature-card:nth-child(3) { background: #f7edcf; }
+
+    .feature-icon { width: 64px; height: 64px; border: 1.5px solid var(--ink); border-radius: 18px; display: grid; place-items: center; font-size: 28px; background: white; }
+    .feature-card h3 { margin: 34px 0 10px; font-size: 24px; letter-spacing: -.03em; }
+    .feature-card p { margin: 0; color: var(--muted); line-height: 1.75; }
+    .feature-no { margin-top: auto; font-size: 12px; font-weight: 900; letter-spacing: .1em; color: var(--green); }
+
+    .quickstart {
+      margin-bottom: 100px;
+      border: 1.5px solid var(--ink); border-radius: 24px;
+      background: var(--ink); color: white;
+      display: grid; grid-template-columns: .75fr 1.25fr;
+      overflow: hidden;
+    }
+    .quickstart-copy { padding: 44px; }
+    .quickstart-copy h2 { margin: 10px 0 14px; font-size: 42px; letter-spacing: -.05em; }
+    .quickstart-copy p { color: rgba(255,255,255,.66); line-height: 1.7; }
+    .code-panel { margin: 20px; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; background: #101812; display: grid; align-content: center; padding: 30px; }
+    .code-panel code { display: block; font: 16px/1.9 Consolas, monospace; color: #d9eccd; }
+    .code-panel code::before { content: "$ "; color: var(--lime); }
+
+    footer { border-top: 1px solid var(--line); padding: 28px 0 38px; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 860px) {
+      .nav-links a:not(.github-pill) { display: none; }
+      .hero { grid-template-columns: 1fr; padding-top: 25px; }
+      h1 { font-size: clamp(52px, 14vw, 78px); }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature-card { min-height: 270px; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .quickstart { grid-template-columns: 1fr; }
+      .float-tag { right: 10px; }
+    }
+
+    @media (max-width: 540px) {
+      .shell { width: min(100% - 28px, 1180px); }
+      nav { height: 70px; }
+      .github-pill span { display: none; }
+      .hero { gap: 28px; }
+      .lead { font-size: 16px; }
+      .app-window { min-height: 360px; }
+      .window-body { grid-template-columns: 78px 1fr; height: 306px; }
+      .sidebar { padding: 14px 8px; }
+      .chat { padding: 16px; }
+      .bubble { max-width: 88%; }
+      .quickstart-copy { padding: 30px 24px 10px; }
+      .code-panel { margin: 10px; padding: 20px 16px; }
+      .code-panel code { font-size: 13px; }
+      .footer-inner { align-items: start; flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <nav aria-label="主导航">
+      <a class="brand" href="#top" aria-label="回到顶部">
+        <span class="brand-mark">⌘</span>
+        <span>ITCLASS / TOOL</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">功能</a>
+        <a href="#quickstart">开始使用</a>
+        <a class="github-pill" href="https://github.com/Xuandows9/ITclass-tool" target="_blank" rel="noreferrer">
+          <svg width="17" height="17" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.67 0 8.2c0 3.62 2.29 6.69 5.47 7.77.4.08.55-.18.55-.39 0-.19-.01-.83-.01-1.51-2.01.38-2.53-.5-2.69-.96-.09-.23-.48-.96-.82-1.15-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.22 1.87.88 2.33.67.07-.52.28-.88.51-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.88.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.22 2.2.82A7.5 7.5 0 018 2.2c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.26.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.74.54 1.5 0 1.08-.01 1.95-.01 2.22 0 .21.15.47.55.39A8.1 8.1 0 0016 8.2C16 3.67 12.42 0 8 0z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="shell hero">
+      <div>
+        <div class="eyebrow">LAN · Offline · Classroom</div>
+        <h1>信息课，<em>更顺手。</em></h1>
+        <p class="lead">一个为局域网场景打造的轻量桌面工具。聊天、启动游戏与课堂工具集中在一个窗口，数据不依赖外网。</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#quickstart">快速开始 <span>↗</span></a>
+          <a class="btn btn-secondary" href="https://github.com/Xuandows9/ITclass-tool/releases" target="_blank" rel="noreferrer">查看版本</a>
+        </div>
+      </div>
+
+      <div class="app-window" aria-label="应用界面预览">
+        <div class="window-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="window-body">
+          <aside class="sidebar">
+            <div class="avatar-row"><div class="avatar"></div><div class="tiny-lines"><i></i><i></i></div></div>
+            <div class="avatar-row"><div class="avatar"></div><div class="tiny-lines"><i></i><i></i></div></div>
+            <div class="avatar-row"><div class="avatar"></div><div class="tiny-lines"><i></i><i></i></div></div>
+          </aside>
+          <section class="chat">
+            <div class="chat-head"><span>局域网频道</span><span class="status">● 在线</span></div>
+            <div class="messages">
+              <div class="bubble incoming">今天的作业也太多了吧？</div>
+              <div class="bubble outgoing">先完成一部分，再聊！</div>
+            </div>
+            <div class="chat-input"><span>输入消息…</span><span class="send">↑</span></div>
+          </section>
+        </div>
+        <div class="float-tag">纯 P2P · 不走外网</div>
+      </div>
+    </section>
+
+    <section class="shell features" id="features">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">Core tools</div>
+          <h2>三个入口，一个工具箱。</h2>
+        </div>
+        <p>围绕电脑教室与局域网环境设计，减少切换窗口、寻找入口和依赖外部网络的麻烦。</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3>局域网聊天</h3>
+          <p>通过 UDP 自动发现附近设备，并使用 TCP 建立私聊连接；无需独立服务器。</p>
+          <div class="feature-no">01 / NETWORK CHAT</div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🎮</div>
+          <h3>一键启动游戏</h3>
+          <p>内置游戏资源可在首次运行时解压并定位，随后直接从工具箱启动。</p>
+          <div class="feature-no">02 / QUICK LAUNCH</div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">▣</div>
+          <h3>课堂工具</h3>
+          <p>整合常用窗口与工具入口，让日常操作集中在一个简洁界面中完成。</p>
+          <div class="feature-no">03 / TOOLBOX</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shell quickstart" id="quickstart">
+      <div class="quickstart-copy">
+        <div class="eyebrow" style="color:var(--lime)">Get started</div>
+        <h2>源码运行</h2>
+        <p>兼容 Windows 桌面环境；项目也提供 PyInstaller 构建工作流。</p>
+      </div>
+      <div class="code-panel">
+        <code>python main.py</code>
+        <code>python -m it_class_tool</code>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span>© 2026 ITclass-tool · AGPL-3.0</span>
+      <a href="https://github.com/Xuandows9/ITclass-tool" target="_blank" rel="noreferrer">Xuandows9 / ITclass-tool ↗</a>
+    </div>
+  </footer>
+</body>
+</html>
