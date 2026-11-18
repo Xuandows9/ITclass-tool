@@ -1,6 +1,9 @@
 #聊天会话缓存
 data
 
+#临时
+lanchat.py.bak
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
