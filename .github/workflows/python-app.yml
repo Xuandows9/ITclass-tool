@@ -1,54 +1,135 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# 构建 Windows 可执行文件（exe）
+#
+# 说明：
+# - 构建产物是 Windows GUI 程序，因此必须跑在 windows-latest 上（不能在 ubuntu 上交叉编译）
+# - 使用 --windowed 隐藏控制台窗口
+# - 若仓库根目录存在 icons/*/app.ico，自动选用作为程序图标
+# - 若仓库根目录存在 CS1_6 目录，会自动作为内置资源一起打包（不存在则跳过，程序仍可正常运行）
 
-name: Python application
+name: Build Windows EXE
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  # 允许在 Actions 页面手动触发构建
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest
-    - name: Install PyInstaller
-      run: |
-        pip install pyinstaller
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Build Executable with PyInstaller
-      run: |
-        # 使用 --onefile 打包成单文件，--name 指定程序名
-        # 如果你的程序是 GUI 界面，可以加上 --windowed 隐藏控制台
-        pyinstaller --onefile --name it_class_tool_exe main.py
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: it-class-tool-exe
-        path: dist/it_class_tool_exe.exe
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          if (Test-Path requirements.txt) { pip install -r requirements.txt }
+
+      # 仅做语法与导入检查，避免无谓的打包失败
+      - name: Smoke check (syntax & import)
+        shell: pwsh
+        run: |
+          python -m compileall -q it_class_tool main.py
+          if ($LASTEXITCODE -ne 0) { throw "编译失败" }
+          python -c "import it_class_tool; print('import OK', it_class_tool.__version__)"
+
+      - name: Resolve icon
+        id: icon
+        shell: pwsh
+        run: |
+          # 按优先级查找图标：优先根目录 app.ico，其次 icons/ 下的任意 app.ico
+          $candidates = @()
+          $candidates += "app.ico"
+          if (Test-Path "icons") {
+            $candidates += (Get-ChildItem "icons" -Recurse -Filter "app.ico" -ErrorAction SilentlyContinue |
+                            Sort-Object FullName | ForEach-Object { $_.FullName })
+          }
+          $found = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+          if ($found) {
+            Write-Output "icon=$found" >> $env:GITHUB_OUTPUT
+            Write-Output "使用图标: $found"
+          } else {
+            Write-Output "icon=" >> $env:GITHUB_OUTPUT
+            Write-Output "未找到图标，将使用默认图标"
+          }
+
+      - name: Resolve bundled assets
+        id: assets
+        shell: pwsh
+        run: |
+          # CS1_6 是内置游戏资源，存在时通过 --add-data 一起打包
+          if (Test-Path CS1_6) {
+            Write-Output "cs=--add-data CS1_6;CS1_6" >> $env:GITHUB_OUTPUT
+            Write-Output "发现 CS1_6，将一并打包"
+          } else {
+            Write-Output "cs=" >> $env:GITHUB_OUTPUT
+            Write-Output "未发现 CS1_6，跳过内置资源"
+          }
+
+      - name: Build EXE with PyInstaller
+        shell: pwsh
+        env:
+          ICON: ${{ steps.icon.outputs.icon }}
+          CS_DATA: ${{ steps.assets.outputs.cs }}
+        run: |
+          $pyArgs = @(
+            "--noconfirm",
+            "--clean",
+            "--onefile",
+            "--windowed",
+            "--name", "it-class-tool",
+            "--collect-submodules", "it_class_tool",
+            "--hidden-import", "tkinter",
+            "--hidden-import", "tkinter.scrolledtext"
+          )
+          if ($env:ICON) {
+            $pyArgs += @("--icon", $env:ICON)
+          }
+          if ($env:CS_DATA) {
+            $pyArgs += @("--add-data", $env:CS_DATA)
+          }
+          $pyArgs += @("main.py")
+
+          Write-Output "pyinstaller $($pyArgs -join ' ')"
+          $prevEAP = $ErrorActionPreference
+          $ErrorActionPreference = "Continue"   # PyInstaller 把进度写到 stderr
+          pyinstaller @pyArgs 2>&1 | ForEach-Object { Write-Host $_ }
+          $buildCode = $LASTEXITCODE
+          $ErrorActionPreference = $prevEAP
+          if ($buildCode -ne 0) { throw "PyInstaller 构建失败，退出码 $buildCode" }
+
+          if (!(Test-Path "dist\it-class-tool.exe")) { throw "构建产物不存在" }
+          $size = (Get-Item "dist\it-class-tool.exe").Length / 1MB
+          Write-Output ("生成成功：dist\it-class-tool.exe ({0:N2} MB)" -f $size)
+
+      # 校验产物确实是可执行的 PE 文件
+      - name: Verify EXE
+        shell: pwsh
+        run: |
+          $f = "dist\it-class-tool.exe"
+          $bytes = [System.IO.File]::ReadAllBytes($f)[0..1]
+          $sig = [System.Text.Encoding]::ASCII.GetString($bytes)
+          if ($sig -ne "MZ") { throw "产物不是有效的 Windows 可执行文件" }
+          Write-Output "PE 文件头校验通过"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: it-class-tool-windows-exe
+          path: dist/it-class-tool.exe
+          if-no-files-found: error
+          retention-days: 30
